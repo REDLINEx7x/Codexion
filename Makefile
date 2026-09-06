@@ -4,9 +4,9 @@ CC          = cc
 CFLAGS      = -Wall -Wextra -Werror -pthread
 
 SRCS        = main.c \
-              coder.c \
-              dongle.c \
-              scheduler.c \
+              init.c \
+              parsing.c \
+              sim.c \
               monitor.c \
               utils.c
 
