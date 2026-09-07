@@ -3,15 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
+/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 10:39:06 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/08/24 20:22:51 by redline          ###   ########.fr       */
+/*   Updated: 2026/09/07 11:31:06 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
-
 
 static int  is_valid_number(char *str)
 {

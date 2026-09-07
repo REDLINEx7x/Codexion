@@ -1,4 +1,80 @@
-void *monitor_routine(t_data *data)
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   monitor.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/07 11:34:42 by moamhouc          #+#    #+#             */
+/*   Updated: 2026/09/07 12:28:50 by moamhouc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "codexion.h"
+
+static bool required_compiles(t_data *data)
 {
-    
+    int i;
+
+    i = 0;
+    while (i < data->nb_coders)
+    {
+        if (data->coders[i].compiles_done < data->nb_compiles_req)
+            return (false);
+        i++;
+    }
+    return (true);
+}
+
+static void announce_burnout(t_data *data, int coder_id)
+{
+    long time_ms;
+
+    time_ms = get_current_time_ms() - data->start_time_ms;
+    pthread_mutex_lock(&data->write_lock);
+    printf("%ld %d burned out\n", time_ms, coder_id);
+    pthread_mutex_unlock(&data->write_lock);
+}
+
+void *monitor_routine(void *arg)
+{
+    t_data  *data;
+    long    now;
+    int     i;
+    int     burned_id;
+
+    data = (t_data *)arg;
+
+    while(check_sim_active(data) == true)
+    {
+        burned_id = -1;
+        pthread_mutex_lock(&data->state_lock);
+        now = get_current_time_ms();
+        i = 0;
+        while(i < data->nb_coders)
+        {
+            if (now - data->coders[i].last_compile_start_ms > data->t_burnout)
+            {
+                burned_id = data->coders[i].id;
+                break;
+            }
+            i++;
+        }
+        if (burned_id == -1 && required_compiles(data) == true)
+        {
+            data->sim_active = false;
+            pthread_mutex_unlock(&data->state_lock);
+            break;
+        }
+        if (burned_id != -1)
+            data->sim_active = false;
+        pthread_mutex_unlock(&data->state_lock);
+        if (burned_id != -1)
+        {
+            announce_burnout(data, burned_id);
+            break ;
+        }
+        usleep(1000);
+    }
+    return (NULL);
 }

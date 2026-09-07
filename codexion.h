@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   codexion.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
+/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 10:39:13 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/04 01:07:52 by redline          ###   ########.fr       */
+/*   Updated: 2026/09/07 11:37:54 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,10 +88,10 @@ int         parse_args(char **av, t_data *data);
 int         init_simulation(t_data *data);
 void        *coder_routine(void *arg);
 int         start_simulation(t_data *data);
-void        *monitor_routine(t_data *data);
+void        *monitor_routine(void *arg);
 
 void        pqueue_push(t_pqueue *q, t_coder *coder, long request_ms, long deadline_ms);
 bool        pqueue_is_front(t_pqueue *q, t_coder *coder, int scheduler);
 void        pqueue_remove(t_pqueue *q, t_coder *coder);
-
+void        cleanup_simulation(t_data *data);
 #endif

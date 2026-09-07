@@ -1,5 +1,45 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pqueue.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/07 11:34:32 by moamhouc          #+#    #+#             */
+/*   Updated: 2026/09/07 20:34:10 by moamhouc         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
+static bool has_priority(t_pq_entry *a, t_pq_entry *b, int scheduler)
+{
+    long a_key;
+    long b_key;
+
+    a_key = entry_key(a, scheduler);
+    b_key = entry_key(b, scheduler);
+    if (a_key < b_key)
+        return true;
+    else if (a_key > b_key)
+        return false;
+    else
+    {
+        if (a->coder->id < b->coder->id)
+        return true;
+    else
+        return false;
+    }
+}
+
+static void pq_swap(t_pq_entry *a, t_pq_entry *b)
+{
+    t_pq_entry temp;
+
+    temp = *a;
+    *a = *b;
+    *b = temp;
+}
 
 void    pqueue_push(t_pqueue *q, t_coder *coder, long request_ms, long deadline_ms)
 {
@@ -16,25 +56,6 @@ static long entry_key(t_pq_entry *e, int scheduler)
     return (e->request_time_ms);
 }
 
-bool    pqueue_is_front(t_pqueue *q, t_coder *coder, int scheduler)
-{
-    int i;
-    long best_key;
-
-    i = 1;
-    best_key = 0;
-
-    if (q->size == 0)
-        return false;
-
-    while( i < q->size)
-    {
-        if(entry_key(&q->entries[i], scheduler) < entry_key(&q->entries[best_key], scheduler) )
-            best_key = i;
-        i++;
-    }
-    return (q->entries[best_key].coder == coder);
-}
 void    pqueue_remove(t_pqueue *q, t_coder *coder)
 {
     int i;
@@ -47,3 +68,4 @@ void    pqueue_remove(t_pqueue *q, t_coder *coder)
     q->entries[i] = q->entries[q->size - 1];
     q->size--;
 }
+

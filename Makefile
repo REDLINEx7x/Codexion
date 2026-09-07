@@ -8,7 +8,8 @@ SRCS        = main.c \
               parsing.c \
               sim.c \
               monitor.c \
-              utils.c
+              utils.c \
+              pqueue.c
 
 OBJS        = $(SRCS:%.c=%.o)
 
