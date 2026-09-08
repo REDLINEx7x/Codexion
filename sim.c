@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:33:56 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/07 12:15:49 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/08 18:02:48 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ static  bool try_acquire(t_coder *coder)
 
     got_it = false;
     pthread_mutex_lock(&coder->data->state_lock);
-    if(pqueue_is_front(&coder->data->queue, coder, coder->data->scheduler))
+    if(pqueue_min_is(&coder->data->queue, coder))
     {
         now  = get_current_time_ms();
         if (coder->left_dongle->taken == false
@@ -30,7 +30,7 @@ static  bool try_acquire(t_coder *coder)
         {
             coder->left_dongle->taken = true;
             coder->right_dongle->taken = true;
-            pqueue_remove(&coder->data->queue, coder);
+            pqueue_pop_min(&coder->data->queue, coder->data->scheduler);
             coder->in_queue = false;
             got_it = true;
         }
@@ -45,7 +45,7 @@ static bool acquire_dongles(t_coder *coder)
     if (coder->in_queue == false)
     {
         coder->wait_start_ms = get_current_time_ms();
-        pqueue_push(&coder->data->queue, coder, coder->wait_start_ms, coder->last_compile_start_ms + coder->data->t_burnout);
+        pqueue_push(&coder->data->queue, coder, coder->wait_start_ms, coder->last_compile_start_ms + coder->data->t_burnout, coder->data->scheduler);
         coder->in_queue = true;
     }
     pthread_mutex_unlock(&coder->data->state_lock);
@@ -58,8 +58,7 @@ static bool acquire_dongles(t_coder *coder)
     pthread_mutex_lock(&coder->data->state_lock);
     if (coder->in_queue == true)
     {
-        pqueue_remove(&coder->data->queue, coder);
-        coder->in_queue = false;
+        pqueue_remove_coder(&coder->data->queue, coder, coder->data->scheduler);        coder->in_queue = false;
     }
     pthread_mutex_unlock(&coder->data->state_lock);
     return (false);
@@ -84,7 +83,6 @@ static void coder_compile(t_coder *coder)
         return ;
     print_status(coder, "has taken a dongle");
     print_status(coder, "has taken a dongle");
-
     pthread_mutex_lock(&coder->data->state_lock);
     coder->last_compile_start_ms = get_current_time_ms();
     pthread_mutex_unlock(&coder->data->state_lock);
@@ -104,11 +102,8 @@ void    *coder_routine(void *arg)
     t_coder *coder;
 
     coder = (t_coder *)arg;
-
-    // Anti-Deadlock: L-Coders z-zawjiyin (even) kay-tsennaw 1ms bach may-tza7mouch
     if (coder->id % 2 == 0)
         usleep(1000);
-
     while (check_sim_active(coder->data) == true)
     {
         coder_compile(coder);
@@ -116,10 +111,14 @@ void    *coder_routine(void *arg)
             break ;
         print_status(coder, "is debugging");
         my_usleep(coder->data->t_debug);
+        if (check_sim_active(coder->data) == false)
+            break ;
         print_status(coder, "is refactoring");
+        my_usleep(coder->data->t_refactor);
     }
     return (NULL);
 }
+
 
 int start_simulation(t_data *data)
 {

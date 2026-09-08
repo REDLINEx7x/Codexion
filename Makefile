@@ -9,7 +9,8 @@ SRCS        = main.c \
               sim.c \
               monitor.c \
               utils.c \
-              pqueue.c
+              pqueue.c \
+              heap_help.c
 
 OBJS        = $(SRCS:%.c=%.o)
 

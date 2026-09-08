@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:42 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/07 12:28:50 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/08 18:20:56 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,13 @@ void *monitor_routine(void *arg)
     int     burned_id;
 
     data = (t_data *)arg;
+    if (data->nb_compiles_req == 0)
+    {
+        pthread_mutex_lock(&data->state_lock);
+        data->sim_active = false;
+        pthread_mutex_unlock(&data->state_lock);
+        return (NULL);
+    }
 
     while(check_sim_active(data) == true)
     {

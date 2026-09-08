@@ -90,8 +90,15 @@ void        *coder_routine(void *arg);
 int         start_simulation(t_data *data);
 void        *monitor_routine(void *arg);
 
-void        pqueue_push(t_pqueue *q, t_coder *coder, long request_ms, long deadline_ms);
-bool        pqueue_is_front(t_pqueue *q, t_coder *coder, int scheduler);
-void        pqueue_remove(t_pqueue *q, t_coder *coder);
+long        entry_key(t_pq_entry *e, int scheduler);
+bool        has_priority(t_pq_entry *a, t_pq_entry *b, int scheduler);
+void        pq_swap(t_pq_entry *a, t_pq_entry *b);
+void        sift_up(t_pqueue *q, int index, int scheduler);
+void        sift_down(t_pqueue *q, int index, int scheduler);
+void        pqueue_push(t_pqueue *q, t_coder *coder, long request_ms, long deadline_ms, int scheduler);
+t_pq_entry  pqueue_pop_min(t_pqueue *q, int scheduler);
+bool        pqueue_min_is(t_pqueue *q, t_coder *coder);
+bool        pqueue_is_empty(t_pqueue *q);
+void        pqueue_remove_coder(t_pqueue *q, t_coder *coder, int scheduler);
 void        cleanup_simulation(t_data *data);
 #endif
