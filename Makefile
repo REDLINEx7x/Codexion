@@ -10,7 +10,8 @@ SRCS        = main.c \
               monitor.c \
               utils.c \
               pqueue.c \
-              heap_help.c
+              heap_help.c \
+              start.c
 
 OBJS        = $(SRCS:%.c=%.o)
 

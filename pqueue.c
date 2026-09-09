@@ -12,15 +12,12 @@
 
 #include "codexion.h"
 
-void	pqueue_push(t_pqueue *q, t_coder *coder, long request_ms,
-			long deadline_ms, int scheduler)
+void	pqueue_push(t_pqueue *q, t_pq_entry entry, int scheduler)
 {
 	int	index;
 
 	index = q->size;
-	q->entries[index].coder = coder;
-	q->entries[index].request_time_ms = request_ms;
-	q->entries[index].deadline_ms = deadline_ms;
+	q->entries[index] = entry;
 	q->size++;
 	sift_up(q, index, scheduler);
 }

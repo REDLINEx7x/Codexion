@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:42 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/08 18:20:56 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/09 13:22:26 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,8 @@ void *monitor_routine(void *arg)
         i = 0;
         while(i < data->nb_coders)
         {
+            //if(get_compiles_done(&data->coders[i]) >= data->nb_compiles_req)
+            //    i++;
             if (now - data->coders[i].last_compile_start_ms > data->t_burnout)
             {
                 burned_id = data->coders[i].id;

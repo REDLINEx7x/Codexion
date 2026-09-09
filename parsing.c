@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 10:39:06 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/08 20:31:06 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/09 11:18:25 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,6 @@ static int  fill_data(t_data *data, char **av)
     return (0);
 }
 
-
-// Now exactly 19 lines - easily passes Norminette!
 int parse_args(char **av, t_data *data)
 {
     int i;

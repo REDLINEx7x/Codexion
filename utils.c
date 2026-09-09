@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:33:33 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/07 11:33:34 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/09 18:58:12 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,19 @@ void    print_status(t_coder *coder, char *status)
     }
 }
 
-void    my_usleep(long time_to_sleep)
+void    my_usleep(long time_to_sleep, t_data *data)
+{
+    long    start_time;
+
+    start_time = get_current_time_ms();
+    while ((get_current_time_ms() - start_time) < time_to_sleep)
+    {
+        if (check_sim_active(data) == false)
+            return ;
+        usleep(50);
+    }
+}
+void    my_usleep_full(long time_to_sleep)
 {
     long    start_time;
 
@@ -73,3 +85,4 @@ void    my_usleep(long time_to_sleep)
     while ((get_current_time_ms() - start_time) < time_to_sleep)
         usleep(50);
 }
+

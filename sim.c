@@ -6,14 +6,14 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:33:56 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/08 18:02:48 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/09 20:34:04 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
 
-static  bool try_acquire(t_coder *coder)
+static bool try_acquire(t_coder *coder)
 {
     long now;
     bool got_it;
@@ -22,7 +22,7 @@ static  bool try_acquire(t_coder *coder)
     pthread_mutex_lock(&coder->data->state_lock);
     if(pqueue_min_is(&coder->data->queue, coder))
     {
-        now  = get_current_time_ms();
+        now = get_current_time_ms();
         if (coder->left_dongle->taken == false
             && now >= coder->left_dongle->cooldown_until_ms
             && coder->right_dongle->taken == false
@@ -30,7 +30,7 @@ static  bool try_acquire(t_coder *coder)
         {
             coder->left_dongle->taken = true;
             coder->right_dongle->taken = true;
-            pqueue_pop_min(&coder->data->queue, coder->data->scheduler);
+            pqueue_remove_coder(&coder->data->queue, coder, coder->data->scheduler);
             coder->in_queue = false;
             got_it = true;
         }
@@ -38,14 +38,30 @@ static  bool try_acquire(t_coder *coder)
     pthread_mutex_unlock(&coder->data->state_lock);
     return (got_it);
 }
+
+static void leave_queue(t_coder *coder)
+{
+    pthread_mutex_lock(&coder->data->state_lock);
+    if (coder->in_queue == true)
+    {
+        pqueue_remove_coder(&coder->data->queue, coder, coder->data->scheduler);
+        coder->in_queue = false;
+    }
+    pthread_mutex_unlock(&coder->data->state_lock);
+}
+
 static bool acquire_dongles(t_coder *coder)
 {
+    t_pq_entry  entry;
 
     pthread_mutex_lock(&coder->data->state_lock);
     if (coder->in_queue == false)
     {
-        coder->wait_start_ms = get_current_time_ms();
-        pqueue_push(&coder->data->queue, coder, coder->wait_start_ms, coder->last_compile_start_ms + coder->data->t_burnout, coder->data->scheduler);
+        entry.coder = coder;
+        entry.request_time_ms = get_current_time_ms();
+        entry.deadline_ms = coder->last_compile_start_ms + coder->data->t_burnout;
+        coder->wait_start_ms = entry.request_time_ms;
+        pqueue_push(&coder->data->queue, entry, coder->data->scheduler);
         coder->in_queue = true;
     }
     pthread_mutex_unlock(&coder->data->state_lock);
@@ -55,14 +71,10 @@ static bool acquire_dongles(t_coder *coder)
             return (true);
         usleep(500);
     }
-    pthread_mutex_lock(&coder->data->state_lock);
-    if (coder->in_queue == true)
-    {
-        pqueue_remove_coder(&coder->data->queue, coder, coder->data->scheduler);        coder->in_queue = false;
-    }
-    pthread_mutex_unlock(&coder->data->state_lock);
+    leave_queue(coder);
     return (false);
 }
+
 
 static void release_dongles(t_coder *coder)
 {
@@ -78,7 +90,8 @@ static void release_dongles(t_coder *coder)
 
 static void coder_compile(t_coder *coder)
 {
-
+    if (get_compiles_done(coder) >= coder->data->nb_compiles_req)
+        return ;
     if (acquire_dongles(coder) == false)
         return ;
     print_status(coder, "has taken a dongle");
@@ -88,11 +101,11 @@ static void coder_compile(t_coder *coder)
     pthread_mutex_unlock(&coder->data->state_lock);
 
     print_status(coder, "is compiling");
-    my_usleep(coder->data->t_compile);
+    my_usleep(coder->data->t_compile, coder->data);
 
-    pthread_mutex_lock(&coder->data->state_lock);
-    coder->compiles_done++;
-    pthread_mutex_unlock(&coder->data->state_lock);
+    //pthread_mutex_lock(&coder->data->state_lock);
+    //coder->compiles_done++;
+    //pthread_mutex_unlock(&coder->data->state_lock);
     release_dongles(coder);
 }
 
@@ -102,22 +115,27 @@ void    *coder_routine(void *arg)
     t_coder *coder;
 
     coder = (t_coder *)arg;
-    if (coder->id % 2 == 0)
-        usleep(1000);
     while (check_sim_active(coder->data) == true)
     {
         coder_compile(coder);
         if (check_sim_active(coder->data) == false)
             break ;
         print_status(coder, "is debugging");
-        my_usleep(coder->data->t_debug);
-        if (check_sim_active(coder->data) == false)
-            break ;
+        my_usleep(coder->data->t_debug, coder->data);
         print_status(coder, "is refactoring");
-        my_usleep(coder->data->t_refactor);
+        my_usleep(coder->data->t_refactor, coder->data);
+
+        // ✅ ZIDHA HNA (Mora l-refactor kaml):
+        pthread_mutex_lock(&coder->data->state_lock);
+        coder->compiles_done++;
+        pthread_mutex_unlock(&coder->data->state_lock);
+
+        if (get_compiles_done(coder) >= coder->data->nb_compiles_req)
+            break ;
     }
     return (NULL);
 }
+
 
 
 int start_simulation(t_data *data)
@@ -138,7 +156,7 @@ int start_simulation(t_data *data)
             data->sim_active = false;
             pthread_mutex_unlock(&data->state_lock);
             j = 0;
-            while (j < i)
+            while (j < data->nb_coders)
             {
                 pthread_join(data->coders[j].thread, NULL);
                 j++;
@@ -158,7 +176,7 @@ int start_simulation(t_data *data)
             pthread_join(data->coders[j].thread, NULL);
             j++;
         }
-        return 1;
+        return (1);
     }
     i = 0;
     while(i < data->nb_coders)
