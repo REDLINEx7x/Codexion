@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:33:56 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/11 11:23:52 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/11 12:47:32 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ static bool	try_acquire(t_coder *coder)
 	long	now;
 	bool	got_it;
 
+	if (coder->left_dongle == coder->right_dongle)
+		return (false);
 	got_it = false;
 	pthread_mutex_lock(&coder->data->state_lock);
 	now = get_current_time_ms();
