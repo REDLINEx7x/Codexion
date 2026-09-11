@@ -6,34 +6,34 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:42 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/11 09:00:18 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/11 12:28:59 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-static bool required_compiles(t_data *data)
+static bool	required_compiles(t_data *data)
 {
-    int i;
+	int	i;
 
-    i = 0;
-    while (i < data->nb_coders)
-    {
-        if (data->coders[i].compiles_done < data->nb_compiles_req)
-            return (false);
-        i++;
-    }
-    return (true);
+	i = 0;
+	while (i < data->nb_coders)
+	{
+		if (data->coders[i].compiles_done < data->nb_compiles_req)
+			return (false);
+		i++;
+	}
+	return (true);
 }
 
-static void announce_burnout(t_data *data, int coder_id)
+static void	announce_burnout(t_data *data, int coder_id)
 {
-    long time_ms;
+	long	time_ms;
 
-    time_ms = get_current_time_ms() - data->start_time_ms;
-    pthread_mutex_lock(&data->write_lock);
-    printf("%ld %d burned out\n", time_ms, coder_id);
-    pthread_mutex_unlock(&data->write_lock);
+	time_ms = get_current_time_ms() - data->start_time_ms;
+	pthread_mutex_lock(&data->write_lock);
+	printf("%ld %d burned out\n", time_ms, coder_id);
+	pthread_mutex_unlock(&data->write_lock);
 }
 
 static int	check_coders(t_data *data, long now)
@@ -43,8 +43,8 @@ static int	check_coders(t_data *data, long now)
 	i = 0;
 	while (i < data->nb_coders)
 	{
-		if (data->coders[i].compiles_done < data->nb_compiles_req
-			&& now - data->coders[i].last_compile_start_ms >= data->t_burnout)
+		if (data->coders[i].compiles_done < data->nb_compiles_req && now
+			- data->coders[i].last_compile_start_ms >= data->t_burnout)
 			return (data->coders[i].id);
 		i++;
 	}
@@ -77,10 +77,7 @@ void	*monitor_routine(void *arg)
 	}
 	return (NULL);
 }
-
-
-
-//void *monitor_routine(void *arg)
+// void *monitor_routine(void *arg)
 //{
 //    t_data  *data;
 //    long    now;
@@ -97,10 +94,11 @@ void	*monitor_routine(void *arg)
 //        while(i < data->nb_coders)
 //        {
 //            if (data->coders[i].compiles_done < data->nb_compiles_req
-//                && now - data->coders[i].last_compile_start_ms >= data->t_burnout)
+//                && now
+	//- data->coders[i].last_compile_start_ms >= data->t_burnout)
 //            {
 //                burned_id = data->coders[i].id;
-//                break;
+//                break ;
 //            }
 //            i++;
 //        }
@@ -108,7 +106,7 @@ void	*monitor_routine(void *arg)
 //        {
 //            data->sim_active = false;
 //            pthread_mutex_unlock(&data->state_lock);
-//            break;
+//            break ;
 //        }
 //        if (burned_id != -1)
 //            data->sim_active = false;

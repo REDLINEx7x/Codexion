@@ -66,7 +66,7 @@ int	get_compiles_done(t_coder *coder)
 	return (done);
 }
 
-//void	leave_queue(t_coder *coder)
+// void	leave_queue(t_coder *coder)
 //{
 //	pthread_mutex_lock(&coder->data->state_lock);
 //	if (coder->in_queue == true)

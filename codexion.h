@@ -96,7 +96,8 @@ void					pqueue_push(t_pqueue *q, t_pq_entry entry,
 							int scheduler);
 t_pq_entry				pqueue_pop_min(t_pqueue *q, int scheduler);
 bool					pqueue_min_is(t_pqueue *q, t_coder *coder);
-bool pqueue_priority(t_pqueue *q, t_coder *coder, long now, int scheduler);
+bool					pqueue_priority(t_pqueue *q, t_coder *coder, long now,
+							int scheduler);
 bool					pqueue_is_empty(t_pqueue *q);
 void					pqueue_remove_coder(t_pqueue *q, t_coder *coder,
 							int scheduler);

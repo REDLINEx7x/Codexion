@@ -12,30 +12,31 @@
 
 #include "codexion.h"
 
-static bool try_acquire(t_coder *coder)
+static bool	try_acquire(t_coder *coder)
 {
-    long now;
-    bool got_it;
+	long	now;
+	bool	got_it;
 
-    got_it = false;
-    pthread_mutex_lock(&coder->data->state_lock);
-    now = get_current_time_ms();
-    if (coder->left_dongle->taken == false
-        && now >= coder->left_dongle->cooldown_until_ms
-        && coder->right_dongle->taken == false
-        && now >= coder->right_dongle->cooldown_until_ms)
-    {
-        if (pqueue_priority(&coder->data->queue, coder, now, coder->data->scheduler) == false)
-        {
-            coder->left_dongle->taken = true;
-            coder->right_dongle->taken = true;
-            pqueue_pop_min(&coder->data->queue, coder->data->scheduler);
-            coder->in_queue = false;
-            got_it = true;
-        }
-    }
-    pthread_mutex_unlock(&coder->data->state_lock);
-    return (got_it);
+	got_it = false;
+	pthread_mutex_lock(&coder->data->state_lock);
+	now = get_current_time_ms();
+	if (coder->left_dongle->taken == false
+		&& now >= coder->left_dongle->cooldown_until_ms
+		&& coder->right_dongle->taken == false
+		&& now >= coder->right_dongle->cooldown_until_ms)
+	{
+		if (pqueue_priority(&coder->data->queue, coder, now,
+				coder->data->scheduler) == false)
+		{
+			coder->left_dongle->taken = true;
+			coder->right_dongle->taken = true;
+			pqueue_pop_min(&coder->data->queue, coder->data->scheduler);
+			coder->in_queue = false;
+			got_it = true;
+		}
+	}
+	pthread_mutex_unlock(&coder->data->state_lock);
+	return (got_it);
 }
 
 static bool	acquire_dongles(t_coder *coder)

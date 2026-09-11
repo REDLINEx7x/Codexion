@@ -41,7 +41,7 @@ t_pq_entry	pqueue_pop_min(t_pqueue *q, int scheduler)
 	return (best_entry);
 }
 
-//bool	pqueue_min_is(t_pqueue *q, t_coder *coder)
+// bool	pqueue_min_is(t_pqueue *q, t_coder *coder)
 //{
 //	if (q->size == 0)
 //		return (false);
@@ -80,12 +80,11 @@ void	leave_queue(t_coder *coder)
 	pthread_mutex_unlock(&coder->data->state_lock);
 }
 
-
-bool pqueue_priority(t_pqueue *q, t_coder *coder, long now, int scheduler)
+bool	pqueue_priority(t_pqueue *q, t_coder *coder, long now, int scheduler)
 {
-	int i;
-	int idx;
-	t_coder *next;
+	int		i;
+	int		idx;
+	t_coder	*next;
 
 	idx = 0;
 	while (idx < q->size && q->entries[idx].coder != coder)
@@ -95,8 +94,9 @@ bool pqueue_priority(t_pqueue *q, t_coder *coder, long now, int scheduler)
 	i = -1;
 	while (++i < q->size)
 	{
-		if (i == idx || has_priority(&q->entries[i], &q->entries[idx], scheduler) == false)
-			continue;
+		if (i == idx || has_priority(&q->entries[i], &q->entries[idx],
+				scheduler) == false)
+			continue ;
 		next = q->entries[i].coder;
 		if (next->left_dongle->taken == false
 			&& now >= next->left_dongle->cooldown_until_ms
