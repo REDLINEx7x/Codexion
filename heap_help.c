@@ -51,8 +51,8 @@ void	sift_up(t_pqueue *q, int index, int scheduler)
 	while (index > 0)
 	{
 		next = (index - 1) / 2;
-		if (has_priority(&q->entries[index], &q->entries[next], scheduler)
-			== false)
+		if (has_priority(&q->entries[index], &q->entries[next],
+				scheduler) == false)
 			break ;
 		pq_swap(&q->entries[index], &q->entries[next]);
 		index = next;
@@ -70,8 +70,8 @@ void	sift_down(t_pqueue *q, int index, int scheduler)
 		left = (index * 2) + 1;
 		right = (index * 2) + 2;
 		best = index;
-		if (has_priority(&q->entries[best], &q->entries[left], scheduler)
-			== false)
+		if (has_priority(&q->entries[best], &q->entries[left],
+				scheduler) == false)
 			best = left;
 		if (right < q->size && has_priority(&q->entries[best],
 				&q->entries[right], scheduler) == false)

@@ -27,7 +27,7 @@ int	main(int argc, char **argv)
 
 	if (argc != 9)
 	{
-		fprintf (stderr, "Error: Invalid arguments.\n");
+		fprintf(stderr, "Error: Invalid arguments.\n");
 		return (1);
 	}
 	if (parse_args(argv, &data) != 0)

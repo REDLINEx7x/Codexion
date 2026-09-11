@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:42 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/09 13:22:26 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/11 09:00:18 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,54 +36,89 @@ static void announce_burnout(t_data *data, int coder_id)
     pthread_mutex_unlock(&data->write_lock);
 }
 
-void *monitor_routine(void *arg)
+static int	check_coders(t_data *data, long now)
 {
-    t_data  *data;
-    long    now;
-    int     i;
-    int     burned_id;
+	int	i;
 
-    data = (t_data *)arg;
-    if (data->nb_compiles_req == 0)
-    {
-        pthread_mutex_lock(&data->state_lock);
-        data->sim_active = false;
-        pthread_mutex_unlock(&data->state_lock);
-        return (NULL);
-    }
-
-    while(check_sim_active(data) == true)
-    {
-        burned_id = -1;
-        pthread_mutex_lock(&data->state_lock);
-        now = get_current_time_ms();
-        i = 0;
-        while(i < data->nb_coders)
-        {
-            //if(get_compiles_done(&data->coders[i]) >= data->nb_compiles_req)
-            //    i++;
-            if (now - data->coders[i].last_compile_start_ms > data->t_burnout)
-            {
-                burned_id = data->coders[i].id;
-                break;
-            }
-            i++;
-        }
-        if (burned_id == -1 && required_compiles(data) == true)
-        {
-            data->sim_active = false;
-            pthread_mutex_unlock(&data->state_lock);
-            break;
-        }
-        if (burned_id != -1)
-            data->sim_active = false;
-        pthread_mutex_unlock(&data->state_lock);
-        if (burned_id != -1)
-        {
-            announce_burnout(data, burned_id);
-            break ;
-        }
-        usleep(1000);
-    }
-    return (NULL);
+	i = 0;
+	while (i < data->nb_coders)
+	{
+		if (data->coders[i].compiles_done < data->nb_compiles_req
+			&& now - data->coders[i].last_compile_start_ms >= data->t_burnout)
+			return (data->coders[i].id);
+		i++;
+	}
+	if (required_compiles(data) == true)
+		data->sim_active = false;
+	return (-1);
 }
+
+void	*monitor_routine(void *arg)
+{
+	t_data	*data;
+	int		burned_id;
+
+	data = (t_data *)arg;
+	while (check_sim_active(data) == true)
+	{
+		pthread_mutex_lock(&data->state_lock);
+		burned_id = check_coders(data, get_current_time_ms());
+		if (burned_id != -1)
+			data->sim_active = false;
+		pthread_mutex_unlock(&data->state_lock);
+		if (burned_id != -1)
+		{
+			announce_burnout(data, burned_id);
+			break ;
+		}
+		if (check_sim_active(data) == false)
+			break ;
+		usleep(1000);
+	}
+	return (NULL);
+}
+
+
+
+//void *monitor_routine(void *arg)
+//{
+//    t_data  *data;
+//    long    now;
+//    int     i;
+//    int     burned_id;
+
+//    data = (t_data *)arg;
+//    while(check_sim_active(data) == true)
+//    {
+//        burned_id = -1;
+//        pthread_mutex_lock(&data->state_lock);
+//        now = get_current_time_ms();
+//        i = 0;
+//        while(i < data->nb_coders)
+//        {
+//            if (data->coders[i].compiles_done < data->nb_compiles_req
+//                && now - data->coders[i].last_compile_start_ms >= data->t_burnout)
+//            {
+//                burned_id = data->coders[i].id;
+//                break;
+//            }
+//            i++;
+//        }
+//        if (burned_id == -1 && required_compiles(data) == true)
+//        {
+//            data->sim_active = false;
+//            pthread_mutex_unlock(&data->state_lock);
+//            break;
+//        }
+//        if (burned_id != -1)
+//            data->sim_active = false;
+//        pthread_mutex_unlock(&data->state_lock);
+//        if (burned_id != -1)
+//        {
+//            announce_burnout(data, burned_id);
+//            break ;
+//        }
+//        usleep(1000);
+//    }
+//    return (NULL);
+//}
