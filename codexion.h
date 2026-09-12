@@ -6,7 +6,7 @@
 /*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 10:39:13 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/11 10:35:37 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/12 17:53:59 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void					sift_down(t_pqueue *q, int index, int scheduler);
 void					pqueue_push(t_pqueue *q, t_pq_entry entry,
 							int scheduler);
 t_pq_entry				pqueue_pop_min(t_pqueue *q, int scheduler);
-bool					pqueue_min_is(t_pqueue *q, t_coder *coder);
+//bool					pqueue_min_is(t_pqueue *q, t_coder *coder);
 bool					pqueue_priority(t_pqueue *q, t_coder *coder, long now,
 							int scheduler);
 bool					pqueue_is_empty(t_pqueue *q);

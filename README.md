@@ -10,6 +10,8 @@ The simulation models real-world challenges in concurrent systems: fair resource
 
 The simulation ends either when a coder burns out (fails to compile within `time_to_burnout` milliseconds) or when all coders have compiled at least `number_of_compiles_required` times.
 
+Note: with a single coder there is only one dongle on the table. Since compiling requires two dongles simultaneously, the coder can never compile and will always burn out. This is the correct and expected behavior per the subject rules.
+
 ## Instructions
 
 ### Compilation
@@ -48,8 +50,11 @@ This compiles all source files with `-Wall -Wextra -Werror -pthread` and produce
 # 3 coders with EDF scheduling
 ./codexion 3 1500 300 100 100 3 0 edf
 
-# Burnout scenario
+# Burnout scenario (cooldown makes dongles unavailable long enough to starve a coder)
 ./codexion 2 400 300 100 100 5 500 fifo
+
+# Single coder — always burns out (only one dongle exists, two required)
+./codexion 1 800 300 100 100 3 0 fifo
 ```
 
 ### Cleanup
@@ -71,16 +76,14 @@ Coffman's four conditions are broken as follows:
 - **No preemption**: dongles are only released voluntarily after compile completes
 - **Circular wait**: broken by the atomic acquisition strategy
 
-An additional staggered start (`usleep(1000)` for even-numbered coders) prevents all coders from racing simultaneously at t=0.
-
 ### Starvation Prevention
-Fair arbitration is enforced through a priority queue. Every dongle request is registered in a shared queue before attempting acquisition. A coder can only take dongles if it is at the front of the queue. With FIFO, requests are served in arrival order. With EDF, the coder whose burnout deadline is earliest is served first.
+Fair arbitration is enforced through a priority queue. Every dongle request is registered in a shared queue before attempting acquisition. A coder can only take dongles if no higher-priority coder in the queue could use the same dongles right now. With FIFO, requests are served in arrival order. With EDF, the coder whose burnout deadline is earliest is served first.
 
 ### Dongle Cooldown
 After a coder releases a dongle, it is marked unavailable until `dongle_cooldown` milliseconds have elapsed via a `cooldown_until_ms` timestamp. Acquisition checks both that the dongle is not taken and that the cooldown has expired.
 
 ### Precise Burnout Detection
-The monitor thread polls all coders every 1ms, checking `current_time - last_compile_start_ms > time_to_burnout`. When burnout is detected, `sim_active` is set to false and the burnout message is printed within 10ms of the actual deadline.
+The monitor thread polls all coders every 1ms, checking `current_time - last_compile_start_ms >= time_to_burnout`. When burnout is detected, `sim_active` is set to false and the burnout message is printed within 10ms of the actual deadline.
 
 ### Log Serialization
 All output is protected by a dedicated `write_lock` mutex. No two threads can write to stdout simultaneously, preventing interleaved log lines.
@@ -93,20 +96,26 @@ The primary shared-state mutex. Protects `sim_active`, all dongle fields, `last_
 Example — atomic dongle acquisition in `try_acquire`:
 ```c
 pthread_mutex_lock(&coder->data->state_lock);
-if (pqueue_min_is(&coder->data->queue, coder))
+now = get_current_time_ms();
+if (left_dongle->taken == false && now >= left_dongle->cooldown_until_ms
+    && right_dongle->taken == false && now >= right_dongle->cooldown_until_ms)
 {
-    // check both dongles available
-    // mark both taken atomically
-    // pop from queue
+    if (pqueue_priority(&coder->data->queue, coder, now, scheduler) == false)
+    {
+        // no higher-priority coder can use these dongles right now
+        // mark both taken atomically and pop from queue
+    }
 }
 pthread_mutex_unlock(&coder->data->state_lock);
 ```
+
+`pqueue_priority` scans the heap for any entry with higher priority than the current coder whose left and right dongles are also both free. If such a coder exists, the current coder yields. This prevents starvation while keeping acquisition atomic.
 
 ### `pthread_mutex_t write_lock`
 A dedicated output mutex. Protects all `printf` calls so that log lines from different threads never interleave on stdout.
 
 ### Priority Queue (Binary Min-Heap)
-A custom binary min-heap (`heap_help.c`, `pqueue.c`) serves as the waiting queue for dongle requests. Each entry stores the coder pointer, request timestamp, and EDF deadline. The heap root always holds the highest-priority coder. `pqueue_min_is` checks in O(1) whether a given coder is at the front. Coders spin-poll with `usleep(500)` rather than blocking, keeping response time low and avoiding missed wakeups.
+A custom binary min-heap (`heap_help.c`, `pqueue.c`) serves as the waiting queue for dongle requests. Each entry stores the coder pointer, request timestamp, and EDF deadline. The heap root always holds the highest-priority coder. Coders spin-poll with `usleep(500)` rather than blocking, keeping response time low and avoiding missed wakeups.
 
 ### Monitor Thread
 A dedicated thread runs `monitor_routine`, polling every 1ms. It acquires `state_lock` to safely read all coder state. When it detects burnout or completion, it sets `sim_active = false`, causing all coder threads to exit on the next `check_sim_active` call.
@@ -129,4 +138,3 @@ AI was used during this project for the following tasks:
 - Reviewing heap logic for correctness (sift_up, sift_down, remove with rebalance)
 - Identifying Norminette violations across all source files
 - Generating and reviewing test cases for burnout detection, cooldown, and multi-coder fairness
-
