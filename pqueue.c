@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pqueue.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:32 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/11 10:29:39 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/14 22:01:08 by redline          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,32 +21,6 @@ void	pqueue_push(t_pqueue *q, t_pq_entry entry, int scheduler)
 	q->size++;
 	sift_up(q, index, scheduler);
 }
-
-t_pq_entry	pqueue_pop_min(t_pqueue *q, int scheduler)
-{
-	t_pq_entry	best_entry;
-	t_pq_entry	empty_entry;
-
-	if (q->size == 0)
-	{
-		empty_entry.coder = NULL;
-		empty_entry.request_time_ms = 0;
-		empty_entry.deadline_ms = 0;
-		return (empty_entry);
-	}
-	best_entry = q->entries[0];
-	q->entries[0] = q->entries[q->size - 1];
-	q->size--;
-	sift_down(q, 0, scheduler);
-	return (best_entry);
-}
-
-// bool	pqueue_min_is(t_pqueue *q, t_coder *coder)
-//{
-//	if (q->size == 0)
-//		return (false);
-//	return (q->entries[0].coder == coder);
-//}
 
 void	pqueue_remove_coder(t_pqueue *q, t_coder *coder, int scheduler)
 {

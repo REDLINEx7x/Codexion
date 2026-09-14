@@ -3,36 +3,24 @@
 /*                                                        :::      ::::::::   */
 /*   heap_help.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:32 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/12 15:54:05 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/14 22:01:08 by redline          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "codexion.h"
 
-long	entry_key(t_pq_entry *e, int scheduler)
-{
-	if (scheduler == 1)
-		return (e->deadline_ms);
-	return (e->request_time_ms);
-}
-
 bool	has_priority(t_pq_entry *a, t_pq_entry *b, int scheduler)
 {
-	long	a_key;
-	long	b_key;
-
-	a_key = entry_key(a, scheduler);
-	b_key = entry_key(b, scheduler);
-	if (a_key < b_key)
-		return (true);
-	if (a_key > b_key)
-		return (false);
-	if (a->coder->id < b->coder->id)
-		return (true);
-	return (false);
+	if (scheduler == 0 && a->request_order != b->request_order)
+		return (a->request_order < b->request_order);
+	if (scheduler == 1 && a->deadline_ms != b->deadline_ms)
+		return (a->deadline_ms < b->deadline_ms);
+	if (a->request_order != b->request_order)
+		return (a->request_order < b->request_order);
+	return (a->coder->id < b->coder->id);
 }
 
 void	pq_swap(t_pq_entry *a, t_pq_entry *b)

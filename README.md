@@ -77,7 +77,7 @@ Coffman's four conditions are broken as follows:
 - **Circular wait**: broken by the atomic acquisition strategy
 
 ### Starvation Prevention
-Fair arbitration is enforced through a priority queue. Every dongle request is registered in a shared queue before attempting acquisition. A coder can only take dongles if no higher-priority coder in the queue could use the same dongles right now. With FIFO, requests are served in arrival order. With EDF, the coder whose burnout deadline is earliest is served first.
+Fair arbitration is enforced through a priority queue. Every dongle request is registered in a shared queue before attempting acquisition. A coder can only take dongles if no higher-priority coder in the queue could use the same dongles right now. With FIFO, requests are ordered by a monotonic registration number assigned under `state_lock`. With EDF, the coder whose burnout deadline is earliest is served first; equal deadlines use the same registration number as a deterministic tie-breaker.
 
 ### Dongle Cooldown
 After a coder releases a dongle, it is marked unavailable until `dongle_cooldown` milliseconds have elapsed via a `cooldown_until_ms` timestamp. Acquisition checks both that the dongle is not taken and that the cooldown has expired.
@@ -103,25 +103,28 @@ if (left_dongle->taken == false && now >= left_dongle->cooldown_until_ms
     if (pqueue_priority(&coder->data->queue, coder, now, scheduler) == false)
     {
         // no higher-priority coder can use these dongles right now
-        // mark both taken atomically and pop from queue
+        // mark both taken atomically and remove this coder from the queue
     }
 }
 pthread_mutex_unlock(&coder->data->state_lock);
 ```
 
-`pqueue_priority` scans the heap for any entry with higher priority than the current coder whose left and right dongles are also both free. If such a coder exists, the current coder yields. This prevents starvation while keeping acquisition atomic.
+`pqueue_priority` scans the heap for any entry with higher priority than the current coder whose left and right dongles are also both free. If such a coder exists, the current coder yields. Once a coder acquires both dongles, `pqueue_remove_coder` removes that specific coder from the heap and restores the heap order. This keeps acquisition atomic and avoids removing a different blocked coder.
 
 ### `pthread_mutex_t write_lock`
 A dedicated output mutex. Protects all `printf` calls so that log lines from different threads never interleave on stdout.
 
 ### Priority Queue (Binary Min-Heap)
-A custom binary min-heap (`heap_help.c`, `pqueue.c`) serves as the waiting queue for dongle requests. Each entry stores the coder pointer, request timestamp, and EDF deadline. The heap root always holds the highest-priority coder. Coders spin-poll with `usleep(500)` rather than blocking, keeping response time low and avoiding missed wakeups.
+A custom binary min-heap (`heap_help.c`, `pqueue.c`) serves as the waiting queue for dongle requests. Each entry stores the coder pointer, FIFO request order, and EDF deadline. The heap root always holds the highest-priority coder. Coders spin-poll with `usleep(500)` rather than blocking, keeping response time low and avoiding missed wakeups.
 
 ### Monitor Thread
 A dedicated thread runs `monitor_routine`, polling every 1ms. It acquires `state_lock` to safely read all coder state. When it detects burnout or completion, it sets `sim_active = false`, causing all coder threads to exit on the next `check_sim_active` call.
 
 ### `check_sim_active`
 A utility that acquires `state_lock`, reads `sim_active`, and releases the lock. Used by all threads to safely check simulation state without direct shared access.
+
+### Condition variables and events
+This implementation does not use `pthread_cond_t` or a separate custom event object. Coders poll protected state with short `usleep` intervals, while the monitor polls for burnout and completion. Mutexes provide thread-safe communication: coder threads update dongles, queue entries, counters, and `sim_active` under `state_lock`, and the monitor reads and updates the same state under that mutex. The output mutex separately serializes log messages. Each queue request also receives a monotonic registration number while `state_lock` is held, which gives FIFO its exact request order.
 
 ## Resources
 

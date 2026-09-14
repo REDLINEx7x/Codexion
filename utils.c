@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:33:33 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/10 11:29:39 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/14 18:04:26 by redline          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,9 @@ long	ft_atoi(const char *str)
 	i = 0;
 	while (str[i] >= '0' && str[i] <= '9')
 	{
-		res = (res * 10) + (str[i] - '0');
-		if (res < 0)
+		if (res > (LONG_MAX - (str[i] - '0')) / 10)
 			return (-1);
+		res = (res * 10) + (str[i] - '0');
 		i++;
 	}
 	return (res);
@@ -53,18 +53,16 @@ bool	check_sim_active(t_data *data)
 void	print_status(t_coder *coder, char *status)
 {
 	long	current_time;
-	bool	is_active;
 
 	pthread_mutex_lock(&coder->data->state_lock);
-	is_active = coder->data->sim_active;
-	pthread_mutex_unlock(&coder->data->state_lock);
-	if (is_active == true)
+	if (coder->data->sim_active == true)
 	{
 		current_time = get_current_time_ms() - coder->data->start_time_ms;
 		pthread_mutex_lock(&coder->data->write_lock);
 		printf("%ld %d %s\n", current_time, coder->id, status);
 		pthread_mutex_unlock(&coder->data->write_lock);
 	}
+	pthread_mutex_unlock(&coder->data->state_lock);
 }
 
 void	my_usleep(long time_to_sleep, t_data *data)

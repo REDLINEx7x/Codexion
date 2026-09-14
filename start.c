@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   start.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 09:16:41 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/10 14:15:51 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/14 22:01:27 by redline          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,14 +65,3 @@ int	get_compiles_done(t_coder *coder)
 	pthread_mutex_unlock(&coder->data->state_lock);
 	return (done);
 }
-
-// void	leave_queue(t_coder *coder)
-//{
-//	pthread_mutex_lock(&coder->data->state_lock);
-//	if (coder->in_queue == true)
-//	{
-//		pqueue_remove_coder(&coder->data->queue, coder, coder->data->scheduler);
-//		coder->in_queue = false;
-//	}
-//	pthread_mutex_unlock(&coder->data->state_lock);
-//}

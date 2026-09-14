@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/25 18:30:48 by redline           #+#    #+#             */
-/*   Updated: 2026/09/13 16:08:23 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/14 22:01:08 by redline          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ static int	allocate_arrays(t_data *data)
 		return (1);
 	}
 	data->queue.size = 0;
-	data->queue.capacity = data->nb_coders;
 	return (0);
 }
 
@@ -54,7 +53,6 @@ static void	init_dongles(t_data *data)
 	i = 0;
 	while (i < data->nb_coders)
 	{
-		data->dongles[i].id = i;
 		data->dongles[i].taken = false;
 		data->dongles[i].cooldown_until_ms = 0;
 		i++;
@@ -91,6 +89,7 @@ int	init_simulation(t_data *data)
 	}
 	init_dongles(data);
 	init_coders(data);
+	data->next_request_order = 0;
 	data->sim_active = true;
 	return (0);
 }

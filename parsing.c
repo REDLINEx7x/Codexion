@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
+/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/19 10:39:06 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/10 10:15:48 by moamhouc         ###   ########.fr       */
+/*   Updated: 2026/09/14 22:01:59 by redline          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ static int	is_valid_number(char *str)
 	return (0);
 }
 
-// Helper to save lines in parse_args
 static int	fill_data(t_data *data, char **av)
 {
 	data->nb_coders = ft_atoi(av[1]);
