@@ -2,7 +2,6 @@ NAME        = codexion
 
 CC          = cc
 CFLAGS      = -Wall -Wextra -Werror -pthread
-#-fsanitize=thread -g -O0 -o codexion_tsan main.c init.c parsing.c sim.c monitor.c utils.c pqueue.c heap_help.c start.c
 
 SRCS        = main.c \
               init.c \
@@ -32,4 +31,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re tsan
