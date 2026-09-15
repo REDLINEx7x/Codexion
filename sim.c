@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   sim.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
+/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:33:56 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/14 22:01:08 by redline          ###   ########.fr       */
+/*   Updated: 2026/09/15 18:06:13 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,15 +91,8 @@ static void	coder_compile(t_coder *coder)
 	pthread_mutex_unlock(&coder->data->state_lock);
 	print_status(coder, "is compiling");
 	my_usleep(coder->data->t_compile, coder->data);
-	if (check_sim_active(coder->data) == false)
-	{
-		release_dongles(coder);
-		return ;
-	}
 	pthread_mutex_lock(&coder->data->state_lock);
 	coder->compiles_done++;
-	if (required_compiles(coder->data) == true)
-		coder->data->sim_active = false;
 	pthread_mutex_unlock(&coder->data->state_lock);
 	release_dongles(coder);
 	return ;
@@ -113,6 +106,8 @@ void	*coder_routine(void *arg)
 	while (check_sim_active(coder->data) == true)
 	{
 		coder_compile(coder);
+		if (get_compiles_done(coder) >= coder->data->nb_compiles_req)
+			break ;
 		if (check_sim_active(coder->data) == false)
 			break ;
 		print_status(coder, "is debugging");

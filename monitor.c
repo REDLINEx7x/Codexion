@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   monitor.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
+/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:42 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/14 18:31:25 by redline          ###   ########.fr       */
+/*   Updated: 2026/09/15 18:14:07 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ static int	check_coders(t_data *data, long now)
 	while (i < data->nb_coders)
 	{
 		if (data->coders[i].compiles_done < data->nb_compiles_req && now
-			- data->coders[i].last_compile_start_ms >= data->t_burnout)
+			- data->coders[i].last_compile_start_ms > data->t_burnout)
 			return (data->coders[i].id);
 		i++;
 	}
