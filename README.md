@@ -1,6 +1,6 @@
 *This project has been created as part of the 42 curriculum by moamhouc.*
 
-# Codexion — Master the race for resources before the deadline masters you
+# Codexion
 
 ## Description
 
@@ -115,7 +115,7 @@ pthread_mutex_unlock(&coder->data->state_lock);
 A dedicated output mutex. Protects all `printf` calls so that log lines from different threads never interleave on stdout.
 
 ### Priority Queue (Binary Min-Heap)
-A custom binary min-heap (`heap_help.c`, `pqueue.c`) serves as the waiting queue for dongle requests. Each entry stores the coder pointer, FIFO request order, and EDF deadline. The heap root always holds the highest-priority coder. Coders spin-poll with `usleep(500)` rather than blocking, keeping response time low and avoiding missed wakeups.
+A custom binary min-heap (`heap_help.c`, `pqueue.c`) serves as the waiting queue for dongle requests. Each entry stores the coder pointer, a monotonic request order counter (assigned under `state_lock`), and EDF deadline. The heap root always holds the highest-priority coder. Coders spin-poll with `usleep(500)` rather than blocking, keeping response time low and avoiding missed wakeups.
 
 ### Monitor Thread
 A dedicated thread runs `monitor_routine`, polling every 1ms. It acquires `state_lock` to safely read all coder state. When it detects burnout or completion, it sets `sim_active = false`, causing all coder threads to exit on the next `check_sim_active` call.

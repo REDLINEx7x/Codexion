@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heap_help.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: redline <redline@student.42.fr>            +#+  +:+       +#+        */
+/*   By: moamhouc <moamhouc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/07 11:34:32 by moamhouc          #+#    #+#             */
-/*   Updated: 2026/09/14 22:01:08 by redline          ###   ########.fr       */
+/*   Updated: 2026/09/16 11:01:58 by moamhouc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,10 @@
 
 bool	has_priority(t_pq_entry *a, t_pq_entry *b, int scheduler)
 {
-	if (scheduler == 0 && a->request_order != b->request_order)
+	if (scheduler == 0)
 		return (a->request_order < b->request_order);
-	if (scheduler == 1 && a->deadline_ms != b->deadline_ms)
+	if (a->deadline_ms != b->deadline_ms)
 		return (a->deadline_ms < b->deadline_ms);
-	if (a->request_order != b->request_order)
-		return (a->request_order < b->request_order);
 	return (a->coder->id < b->coder->id);
 }
 
